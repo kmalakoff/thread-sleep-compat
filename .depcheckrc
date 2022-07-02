@@ -1,0 +1,1 @@
+ignores: ["depcheck", "@mapbox/node-pre-gyp", "eslint-*"]

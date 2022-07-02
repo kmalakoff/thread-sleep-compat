@@ -1,0 +1,47 @@
+{
+  "name": "thread-sleep-compat",
+  "version": "0.0.1",
+  "description": "thread-sleep the runs on multiple versions of node",
+  "keywords": [
+    "thread-sleep",
+    "thread",
+    "sleep"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:kmalakoff/thread-sleep-compat.git"
+  },
+  "license": "MIT",
+  "main": "lib/index.js",
+  "scripts": {
+    "format": "prettier --write .",
+    "lint": "eslint .",
+    "prepublishOnly": "dtd \"npm run lint\" \"depcheck\"",
+    "test": "mocha-compat test/spec/**/*.test.js",
+    "install": "node scripts/postInstall.js"
+  },
+  "files": [
+    "lib",
+    "scripts"
+  ],
+  "dependencies": {
+    "@mapbox/node-pre-gyp": "^1.0.9",
+    "cross-spawn-cb": "^0.5.9",
+    "queue-cb": "^1.1.6",
+    "thread-sleep": "^2.2.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/parser": "^5.30.3",
+    "depcheck": "^1.4.3",
+    "eslint": "^8.19.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "mocha-compat": "^3.5.5",
+    "prettier": "^2.7.1"
+  },
+  "engines": {
+    "node": ">=0.8"
+  }
+}

@@ -13,27 +13,28 @@
   },
   "license": "MIT",
   "main": "lib/index.js",
-  "scripts": {
-    "format": "prettier --write .",
-    "lint": "eslint .",
-    "prepublishOnly": "dtd \"npm run lint\" \"depcheck\"",
-    "test": "mocha-compat test/spec/**/*.test.js",
-    "install": "node scripts/postInstall.js"
-  },
   "files": [
     "lib",
     "scripts"
   ],
+  "scripts": {
+    "format": "prettier --write .",
+    "install": "node scripts/postInstall.js",
+    "lint": "eslint .",
+    "prepublishOnly": "npm run lint && depcheck",
+    "test": "mocha-compat test/spec/**/*.test.js",
+    "test:engines": "nvu engines npm test"
+  },
   "dependencies": {
     "@mapbox/node-pre-gyp": "^1.0.9",
-    "cross-spawn-cb": "^0.5.9",
+    "cross-spawn-cb": "^0.6.4",
     "queue-cb": "^1.1.6",
     "thread-sleep": "^2.2.0"
   },
   "devDependencies": {
-    "@typescript-eslint/parser": "^5.30.3",
+    "@typescript-eslint/parser": "^5.30.7",
     "depcheck": "^1.4.3",
-    "eslint": "^8.19.0",
+    "eslint": "^8.20.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.26.0",

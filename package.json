@@ -18,6 +18,7 @@
     "scripts"
   ],
   "scripts": {
+    "build": "",
     "format": "prettier --write .",
     "install": "node scripts/postInstall.js",
     "lint": "eslint .",

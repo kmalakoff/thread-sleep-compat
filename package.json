@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@mapbox/node-pre-gyp": "^1.0.9",
-    "cross-spawn-cb": "^0.6.5",
+    "cross-spawn-cb": "^0.6.6",
     "queue-cb": "^1.1.7",
     "thread-sleep": "^2.2.0"
   },

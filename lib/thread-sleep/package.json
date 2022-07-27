@@ -3,8 +3,26 @@
   "version": "1.0.4",
   "description": "A native module for when you just need node to back off for a few milliseconds",
   "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ForbesLindesay/thread-sleep.git"
+  },
+  "license": "MIT",
+  "author": "ForbesLindesay",
   "main": "index.js",
+  "binary": {
+    "module_name": "thread_sleep",
+    "module_path": "./lib/binding/{configuration}/{node_abi}-{platform}-{arch}/",
+    "remote_path": "./{module_name}/v{version}/{configuration}/",
+    "package_name": "{module_name}-v{version}-{node_abi}-{platform}-{arch}.tar.gz",
+    "host": "https://node-pre-gyp-forbeslindesay.s3.amazonaws.com"
+  },
+  "scripts": {
+    "install": "node-pre-gyp install --fallback-to-build",
+    "test": "node test"
+  },
   "dependencies": {
+    "@mapbox/node-pre-gyp": "^1.0.9",
     "nan": "^2.16.0",
     "node-pre-gyp": "^0.6.39"
   },
@@ -14,23 +32,6 @@
   "bundledDependencies": [
     "node-pre-gyp"
   ],
-  "scripts": {
-    "test": "node test",
-    "install": "node-pre-gyp install --fallback-to-build"
-  },
-  "binary": {
-    "module_name": "thread_sleep",
-    "module_path": "./lib/binding/{configuration}/{node_abi}-{platform}-{arch}/",
-    "remote_path": "./{module_name}/v{version}/{configuration}/",
-    "package_name": "{module_name}-v{version}-{node_abi}-{platform}-{arch}.tar.gz",
-    "host": "https://node-pre-gyp-forbeslindesay.s3.amazonaws.com"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ForbesLindesay/thread-sleep.git"
-  },
-  "author": "ForbesLindesay",
-  "license": "MIT",
   "bundleDependencies": [
     "node-pre-gyp"
   ]

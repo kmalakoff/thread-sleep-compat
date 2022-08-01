@@ -28,14 +28,22 @@
   },
   "dependencies": {
     "@mapbox/node-pre-gyp": "^1.0.9",
+<<<<<<< HEAD
     "cross-spawn-cb": "^0.6.8",
+=======
+    "cross-spawn-cb": "^0.6.7",
+>>>>>>> 4ea0e9946fb54a8f76313cbf2d8b2837b2a2a342
     "queue-cb": "^1.1.7",
     "thread-sleep": "^2.2.0"
   },
   "devDependencies": {
     "@typescript-eslint/parser": "^5.31.0",
     "depcheck": "^1.4.3",
+<<<<<<< HEAD
     "eslint": "^8.21.0",
+=======
+    "eslint": "^8.20.0",
+>>>>>>> 4ea0e9946fb54a8f76313cbf2d8b2837b2a2a342
     "eslint-config-prettier": "^8.5.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.26.0",

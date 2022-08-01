@@ -22,7 +22,6 @@
     "test": "node test"
   },
   "dependencies": {
-    "@mapbox/node-pre-gyp": "^1.0.9",
     "nan": "^2.16.0",
     "node-pre-gyp": "^0.6.39"
   },

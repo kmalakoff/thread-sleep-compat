@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "nan": "^2.16.0",
-    "node-abi": "^2.30.1",
+    "node-abi": "^3.23.0",
     "thread-sleep": "^2.2.0"
   },
   "devDependencies": {

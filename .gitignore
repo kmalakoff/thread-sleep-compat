@@ -1,4 +1,5 @@
 .DS_Store
 node_modules/
-lib/thread-sleep/build/
-lib/thread-sleep/prebuilds/
+build/
+prebuilds/
+!out/**

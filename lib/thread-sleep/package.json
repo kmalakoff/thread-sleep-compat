@@ -9,7 +9,7 @@
   },
   "license": "MIT",
   "author": "ForbesLindesay",
-  "main": "index.js",
+  "main": "lib/index.js",
   "cmake-js": {
     "runtime": "node",
     "runtimeVersion": "0.10.0",
@@ -22,6 +22,7 @@
     "bindings": "^1.5.0",
     "cmake-js": "^6.3.2",
     "fast-extract": "^0.3.4",
+    "fs-access-compat": "^1.0.3",
     "nan": "^2.16.0",
     "node-abi": "^2.30.1",
     "node-semvers": "^0.6.4",

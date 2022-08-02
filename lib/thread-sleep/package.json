@@ -16,7 +16,7 @@
     "arch": "x64"
   },
   "scripts": {
-    "build": "prebuild --backend cmake-js -t 0.8.24"
+    "build": "scripts/build.js"
   },
   "dependencies": {
     "bindings": "^1.5.0",

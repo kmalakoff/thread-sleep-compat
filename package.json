@@ -20,7 +20,6 @@
   "scripts": {
     "build": "",
     "format": "prettier --write .",
-    "install": "node scripts/postInstall.js",
     "lint": "eslint .",
     "prepublishOnly": "npm run lint && depcheck",
     "test": "mocha-compat test/spec/**/*.test.js",
@@ -29,6 +28,7 @@
   "dependencies": {
     "@mapbox/node-pre-gyp": "^1.0.9",
     "cross-spawn-cb": "^0.6.8",
+    "node-abi": "^2.30.1",
     "queue-cb": "^1.1.7",
     "thread-sleep": "^2.2.0"
   },

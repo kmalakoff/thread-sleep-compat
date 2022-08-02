@@ -10,29 +10,14 @@
   "license": "MIT",
   "author": "ForbesLindesay",
   "main": "index.js",
-  "binary": {
-    "module_name": "thread_sleep",
-    "module_path": "./lib/binding/{configuration}/{node_abi}-{platform}-{arch}/",
-    "remote_path": "./{module_name}/v{version}/{configuration}/",
-    "package_name": "{module_name}-v{version}-{node_abi}-{platform}-{arch}.tar.gz",
-    "host": "https://node-pre-gyp-forbeslindesay.s3.amazonaws.com"
-  },
-  "scripts": {
-    "install": "node-pre-gyp install --fallback-to-build",
-    "test": "node test"
+  "cmake-js": {
+    "runtime": "node",
+    "runtimeVersion": "0.8.0",
+    "arch": "x64"
   },
   "dependencies": {
-    "@mapbox/node-pre-gyp": "^1.0.9",
-    "nan": "^2.16.0",
-    "node-pre-gyp": "^0.6.39"
-  },
-  "devDependencies": {
-    "aws-sdk": "^2.1.9"
-  },
-  "bundledDependencies": [
-    "node-pre-gyp"
-  ],
-  "bundleDependencies": [
-    "node-pre-gyp"
-  ]
+    "bindings": "^1.5.0",
+    "cmake-js": "^6.3.2",
+    "nan": "^2.16.0"
+  }
 }

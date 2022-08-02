@@ -20,6 +20,12 @@ versions = versions.filter(function (x) {
   return +x.split('.')[1] % 2 === 0;
 });
 
+var PLAFORM_ARCHS = {
+  win32: ['x64', 'x86'],
+  linux: ['x64', 'x86'],
+  darwin: ['x64'],
+};
+
 var builds = [];
 versions.reverse().forEach(function (x) {
   var version = x.slice(1);
@@ -31,25 +37,44 @@ versions.reverse().forEach(function (x) {
   var found = builds.find(function (y) {
     return y.abi === abi;
   });
-  if (!found) builds.push({ abi: abi, version: version });
+  if (!found) {
+    var archs = PLAFORM_ARCHS[process.platform];
+    for (var i = 0; i < archs.length; i++) {
+      builds.push({ abi: abi, version: version, arch: archs[i] });
+    }
+  }
 });
 
 var built = [];
-
 function buildOutput(build, callback) {
-  spawn('prebuild', ['--backend', 'cmake-js', '-t', build.version], { stdio: 'inherit' }, function (err) {
-    if (err) return callback(err);
+  var filename = binaryFilename(build.version, { arch: build.arch });
+  var src = path.resolve(__dirname, '..', 'prebuilds', filename.replace(pkg.name, pkg.name + '-v' + pkg.version) + '.tar.gz');
+  var dest = path.resolve(__dirname, '..', 'out', filename);
 
-    var filename = binaryFilename(build.version);
-    var src = path.resolve(__dirname, '..', 'prebuilds', filename.replace(pkg.name, pkg.name + '-v' + pkg.version) + '.tar.gz');
-    var dest = path.resolve(__dirname, '..', 'out', filename);
-
-    access(dest, function (err) {
+  var q = new Queue(1);
+  q.defer(function (callback) {
+    access(src, function (err) {
       if (!err) return callback(); // exists
+
+      spawn('prebuild', ['--backend', 'cmake-js', '-t', build.version, '-a', build.arch], {}, function (err) {
+        console.log(filename + ' ' + (err ? 'failed' : 'succeeded'));
+        return callback(err);
+      });
+    });
+  });
+  q.defer(function (callback) {
+    access(src, function (err) {
+      if (err) return callback(); // src does not exist
+
+      access(dest, function (err) {
+      if (!err) return callback(); // exists
+
       built.push(path.join('out', filename));
       extract(src, dest, {}, callback);
     });
   });
+});
+  q.await(callback);
 }
 
 var queue = new Queue(1);

@@ -12,12 +12,18 @@
   "main": "index.js",
   "cmake-js": {
     "runtime": "node",
-    "runtimeVersion": "0.8.0",
+    "runtimeVersion": "0.10.0",
     "arch": "x64"
+  },
+  "scripts": {
+    "build": "prebuild --backend cmake-js -t 0.8.24"
   },
   "dependencies": {
     "bindings": "^1.5.0",
     "cmake-js": "^6.3.2",
-    "nan": "^2.16.0"
+    "nan": "^2.16.0",
+    "node-abi": "^2.30.1",
+    "node-semvers": "^0.6.4",
+    "prebuild": "^11.0.4"
   }
 }

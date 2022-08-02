@@ -1,4 +1,2 @@
 node_modules/
-lib/cross-spawn/
-lib/path-key/
-lib/spawn-sync/
+lib/thread-sleep/build/

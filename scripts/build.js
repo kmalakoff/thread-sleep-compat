@@ -5,7 +5,6 @@ require('../lib/polyfills');
 var path = require('path');
 var Queue = require('queue-cb');
 var spawn = require('cross-spawn-cb');
-var path = require('path');
 var NodeSemvers = require('node-semvers');
 var getAbi = require('node-abi').getAbi;
 var access = require('fs-access-compat');
@@ -13,6 +12,7 @@ var access = require('fs-access-compat');
 var extract = require('fast-extract');
 
 var binaryFilename = require('../lib/binaryFilename');
+var pkg = require('../package.json');
 
 var semvers = NodeSemvers.loadSync();
 var versions = semvers.resolve('<=0.11.0');
@@ -25,10 +25,9 @@ versions.reverse().forEach(function (x) {
   var version = x.slice(1);
   try {
     var abi = getAbi(version, 'node');
-  }
-   catch (err) {
+  } catch (err) {
     return;
-   }
+  }
   var found = builds.find(function (y) {
     return y.abi === abi;
   });
@@ -38,11 +37,11 @@ versions.reverse().forEach(function (x) {
 var built = [];
 
 function buildOutput(build, callback) {
-  var filename = binaryFilename(build.version);
   spawn('prebuild', ['--backend', 'cmake-js', '-t', build.version], { stdio: 'inherit' }, function (err) {
     if (err) return callback(err);
 
-    var src = path.resolve(__dirname, '..', 'prebuilds', filename + '.tar.gz');
+    var filename = binaryFilename(build.version);
+    var src = path.resolve(__dirname, '..', 'prebuilds', filename.replace(pkg.name, pkg.name + '-v' + pkg.version) + '.tar.gz');
     var dest = path.resolve(__dirname, '..', 'out', filename);
 
     access(dest, function (err) {
@@ -54,7 +53,7 @@ function buildOutput(build, callback) {
 }
 
 var queue = new Queue(1);
-for (i = 0; i < builds.length; i++) queue.defer(buildOutput.bind(null, builds[i]));
+for (var i = 0; i < builds.length; i++) queue.defer(buildOutput.bind(null, builds[i]));
 queue.await(function (err) {
   if (err) {
     console.log(err);

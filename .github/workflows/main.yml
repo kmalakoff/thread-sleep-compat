@@ -1,7 +1,8 @@
 name: CI
 on:
-  - push
-  - pull_request
+  push:
+    branches:
+      - master
 jobs:
   test:
     name: Node.js ${{ matrix.node-version }} ${{ matrix.os }}
@@ -12,7 +13,7 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3.3.0
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
       - run: git config --global user.name "Github Actions"
@@ -20,4 +21,5 @@ jobs:
       - run: npm install node-version-use -g
       - run: npm ci
       - run: npm run lint
-      - run: nvu engines npm run test
+      - run: npm run build
+      - run: npm run test:engines

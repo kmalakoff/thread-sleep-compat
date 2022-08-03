@@ -13,33 +13,41 @@
   },
   "license": "MIT",
   "main": "lib/index.js",
-  "scripts": {
-    "format": "prettier --write .",
-    "lint": "eslint .",
-    "prepublishOnly": "dtd \"npm run lint\" \"depcheck\"",
-    "test": "mocha-compat test/spec/**/*.test.js",
-    "install": "node scripts/postInstall.js"
-  },
   "files": [
     "lib",
-    "scripts"
+    "out"
   ],
+  "scripts": {
+    "build": "",
+    "format": "prettier --write .",
+    "lint": "eslint .",
+    "prepublishOnly": "npm run lint && depcheck",
+    "test": "mocha-compat test/spec/**/*.test.js",
+    "test:engines": "nvu engines npm test"
+  },
   "dependencies": {
-    "@mapbox/node-pre-gyp": "^1.0.9",
-    "cross-spawn-cb": "^0.5.9",
-    "queue-cb": "^1.1.6",
+    "nan": "^2.16.0",
+    "node-abi": "^2.30.1",
     "thread-sleep": "^2.2.0"
   },
   "devDependencies": {
-    "@typescript-eslint/parser": "^5.30.3",
+    "@typescript-eslint/parser": "^5.32.0",
+    "cmake-js": "^6.3.2",
+    "cross-spawn-cb": "^0.6.8",
     "depcheck": "^1.4.3",
-    "eslint": "^8.19.0",
+    "eslint": "^8.21.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.0.0",
+    "fast-extract": "^0.3.4",
+    "fs-access-compat": "^1.0.3",
     "mocha-compat": "^3.5.5",
-    "prettier": "^2.7.1"
+    "node-semvers": "^0.6.4",
+    "prebuild": "^11.0.4",
+    "prettier": "^2.7.1",
+    "queue-cb": "^1.1.7",
+    "semver": "^5.7.1"
   },
   "engines": {
     "node": ">=0.8"

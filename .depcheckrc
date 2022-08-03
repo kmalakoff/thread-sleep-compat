@@ -1,1 +1,1 @@
-ignores: ["depcheck", "@mapbox/node-pre-gyp", "eslint-*"]
+ignores: ["depcheck", "nan", "cmake-js", "prebuild", "eslint-*"]

@@ -34,7 +34,7 @@
   "devDependencies": {
     "@typescript-eslint/parser": "^5.32.0",
     "cmake-js": "^6.3.2",
-    "cross-spawn-cb": "^0.6.9",
+    "cross-spawn-cb": "^0.6.12",
     "depcheck": "^1.4.3",
     "eslint": "^8.21.0",
     "eslint-config-prettier": "^8.5.0",
@@ -44,7 +44,7 @@
     "fast-extract": "^0.3.4",
     "fs-access-compat": "^1.0.3",
     "mocha-compat": "^3.5.5",
-    "node-semvers": "^0.6.4",
+    "node-semvers": "^0.6.7",
     "prebuild": "^11.0.4",
     "prettier": "^2.7.1",
     "queue-cb": "^1.1.7"

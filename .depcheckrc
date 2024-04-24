@@ -1,1 +1,1 @@
-ignores: ["depcheck", "nan", "cmake-js", "prebuild", "eslint-*"]
+ignores: ["thread-sleep-compat", "depcheck", "ts-dev-stack", "@types/*", "nan", "cmake-js", "prebuild"]

@@ -1,0 +1,1 @@
+{"version":3,"sources":["index.mjs"],"sourcesContent":["import threadSleep from './threadSleep.cjs';\nexport default threadSleep;\n"],"names":["threadSleep"],"mappings":";;;;+BACA;;;eAAA;;;qEADwB;;;;;;IACxB,WAAeA,uBAAW"}

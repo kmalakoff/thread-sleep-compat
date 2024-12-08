@@ -20,7 +20,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: git config --global user.name "Github Actions"
       - run: git config --global user.email "actions@users.noreply.github.com"
-      - run: nvu stable npm ci
+      - run: nvu 22 npm ci
       - run: node scripts/build.js
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:

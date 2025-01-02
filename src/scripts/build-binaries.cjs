@@ -4,14 +4,13 @@ const spawn = require('cross-spawn-cb');
 const NodeSemvers = require('node-semvers');
 const getAbi = require('node-abi').getAbi;
 const access = require('fs-access-compat');
-const moduleRoot = require('module-root-sync');
 
 const extract = require('fast-extract');
 
 require('../lib/patchVersions.cjs');
 const binaryFilename = require('../lib/binaryFilename.cjs');
 
-const root = moduleRoot(__dirname);
+const root = path.join(__dirname, '..', '..', '..');
 const pkg = require(path.join(root, 'package.json'));
 
 const semvers = NodeSemvers.loadSync();

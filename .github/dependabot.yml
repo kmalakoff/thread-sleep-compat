@@ -3,11 +3,13 @@ updates:
   - package-ecosystem: npm
     directory: '/'
     schedule:
-      interval: daily
+      interval: weekly
     ignore:
       - dependency-name: 'nan'
       - dependency-name: 'semver'
       - dependency-name: 'node-abi'
+      - dependency-name: '@types/mocha'
+      - dependency-name: '@types/node'
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:

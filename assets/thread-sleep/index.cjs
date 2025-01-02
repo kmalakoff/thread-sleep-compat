@@ -1,7 +1,6 @@
 var path = require('path');
-var moduleRoot = require('module-root-sync');
 
-var root = moduleRoot(__dirname);
+var root = path.join(__dirname, '..', '..');
 var dist = path.join(root, 'dist', 'cjs')
 require(path.join(dist, 'lib', 'patchVersions.cjs'));
 var binaryFilename = require(path.join(dist, 'lib', 'binaryFilename.cjs'));

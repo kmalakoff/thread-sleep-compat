@@ -1,8 +1,7 @@
 const path = require('path');
-const moduleRoot = require('module-root-sync');
 const { getAbi } = require('node-abi');
 
-const root = moduleRoot(__dirname);
+const root = path.join(__dirname, '..', '..', '..');
 const pkg = require(path.join(root, 'package.json'));
 
 module.exports = function binaryFilename(version, options) {

@@ -7,6 +7,7 @@
     "thread",
     "sleep"
   ],
+  "homepage": "https://github.com/kmalakoff/thread-sleep-compat",
   "repository": {
     "type": "git",
     "url": "git@github.com:kmalakoff/thread-sleep-compat.git"
@@ -39,9 +40,9 @@
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.10.4",
     "cmake-js": "^7.3.0",
-    "cross-spawn-cb": "^2.0.4",
+    "cross-spawn-cb": "^2.0.5",
     "fast-extract": "^1.3.1",
-    "fs-access-compat": "^1.1.0",
+    "fs-access-compat": "^1.1.2",
     "node-semvers": "^1.3.1",
     "prebuild": "^13.0.1",
     "queue-cb": "^1.4.4"

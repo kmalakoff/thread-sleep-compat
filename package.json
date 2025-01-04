@@ -10,7 +10,7 @@
   "homepage": "https://github.com/kmalakoff/thread-sleep-compat",
   "repository": {
     "type": "git",
-    "url": "git@github.com:kmalakoff/thread-sleep-compat.git"
+    "url": "git+ssh://git@github.com/kmalakoff/thread-sleep-compat.git"
   },
   "license": "MIT",
   "main": "dist/cjs/index.cjs",

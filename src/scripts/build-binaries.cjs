@@ -1,9 +1,9 @@
+const fs = require('fs');
 const path = require('path');
 const Queue = require('queue-cb');
 const spawn = require('cross-spawn-cb');
 const NodeSemvers = require('node-semvers');
 const getAbi = require('node-abi').getAbi;
-const access = require('fs-access-compat');
 
 const extract = require('fast-extract');
 
@@ -51,7 +51,7 @@ function buildOutput(build, callback) {
 
   const q = new Queue(1);
   q.defer((callback) => {
-    access(src, (err) => {
+    fs.stat(src, (err) => {
       if (!err) return callback(); // exists
 
       const prebuild = path.join(root, 'node_modules', '.bin', 'prebuild');
@@ -62,10 +62,10 @@ function buildOutput(build, callback) {
     });
   });
   q.defer((callback) => {
-    access(src, (err) => {
+    fs.stat(src, (err) => {
       if (err) return callback(); // src does not exist
 
-      access(dest, (err) => {
+      fs.stat(dest, (err) => {
         if (!err) return callback(); // exists
 
         built.push(path.join('out', filename));

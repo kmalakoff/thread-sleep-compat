@@ -1,4 +1,4 @@
 {
   "upgrade": true,
-  "reject": ["@types/node","nan", "semver", "node-abi"]
+  "reject": ["nan", "semver", "node-abi"]
 }

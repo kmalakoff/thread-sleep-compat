@@ -1,1 +1,1 @@
-ignores: ["thread-sleep-compat", "@types/*", "@biomejs/*", "nan", "cmake-js", "prebuild", "mocha-compat", "ts-swc-loaders"]
+ignores: ["thread-sleep-compat", "nan", "cmake-js", "prebuild", "mocha-compat", "ts-swc-loaders"]

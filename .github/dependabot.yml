@@ -8,8 +8,6 @@ updates:
       - dependency-name: 'nan'
       - dependency-name: 'semver'
       - dependency-name: 'node-abi'
-      - dependency-name: '@types/mocha'
-      - dependency-name: '@types/node'
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:

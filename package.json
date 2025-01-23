@@ -22,8 +22,8 @@
   ],
   "scripts": {
     "build": "tsds build",
-    "build-binaries": "node scripts/build-binaries.cjs",
-    "format": "biome check --write --unsafe src/ test/ && biome check --config-path biome.es5.json --write --unsafe scripts/",
+    "build-binaries": "node scripts/build-binaries.mjs",
+    "format": "biome check --write --unsafe src/ test/ scripts/",
     "test": "tsds test:node --no-timeouts",
     "test:engines": "nvu engines npm test",
     "version": "tsds version"
@@ -40,8 +40,8 @@
     "cmake-js": "*",
     "cross-spawn-cb": "*",
     "fast-extract": "*",
-    "lodash.find": "^4.6.0",
-    "node-filename-to-dist-paths": "^1.1.23",
+    "lodash.find": "*",
+    "node-filename-to-dist-paths": "*",
     "node-semvers": "*",
     "prebuild": "*",
     "queue-cb": "*"

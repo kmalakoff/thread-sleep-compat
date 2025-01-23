@@ -41,7 +41,7 @@
     "cross-spawn-cb": "*",
     "fast-extract": "*",
     "lodash.find": "^4.6.0",
-    "node-filename-to-dist-paths": "^1.1.22",
+    "node-filename-to-dist-paths": "^1.1.23",
     "node-semvers": "*",
     "prebuild": "*",
     "queue-cb": "*"

@@ -1,5 +1,5 @@
-const allTargets = require('node-abi').allTargets;
-const semver = require('semver');
+import { allTargets } from 'node-abi';
+import semver from 'semver';
 
 function patchVersions() {
   let abi = null;
@@ -13,4 +13,5 @@ function patchVersions() {
   }
   return abi;
 }
+
 if (!process.versions.modules) process.versions.modules = patchVersions();

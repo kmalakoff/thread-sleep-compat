@@ -1,1 +1,1 @@
-ignores: ["thread-sleep-compat", "nan", "cmake-js", "prebuild", "mocha-compat", "ts-swc-loaders"]
+ignores: ["thread-sleep-compat", "nan", "cmake-js", "prebuild", "mocha-compat", "ts-swc-loaders", "thread-sleep"]

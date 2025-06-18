@@ -27,7 +27,7 @@ describe('thread-sleep-compat', () => {
       assert(ex instanceof TypeError);
     }
     try {
-      // biome-ignore lint/style/useExponentiationOperator: <explanation>
+      // biome-ignore lint/style/useExponentiationOperator: Legacy
       sleep(Math.pow(2, 64));
       throw new Error('sleep with a very large integer should throw an error');
     } catch (ex) {

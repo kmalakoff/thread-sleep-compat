@@ -1,13 +1,13 @@
-import fs from 'fs';
-import path from 'path';
-import url from 'url';
 import spawn from 'cross-spawn-cb';
 import extract from 'fast-extract';
+import fs from 'fs';
 import find from 'lodash.find';
 import { getAbi } from 'node-abi';
 import { getDists } from 'node-filename-to-dist-paths';
 import NodeVersions from 'node-semvers';
+import path from 'path';
 import Queue from 'queue-cb';
+import url from 'url';
 
 import '../dist/cjs/lib/patchVersions.cjs';
 import binaryFilename from '../dist/cjs/lib/binaryFilename.cjs';

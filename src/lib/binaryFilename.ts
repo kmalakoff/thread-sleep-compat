@@ -1,5 +1,5 @@
-import path from 'path';
 import { getAbi } from 'node-abi';
+import path from 'path';
 
 import type { Options } from '../types.js';
 

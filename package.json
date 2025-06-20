@@ -32,8 +32,8 @@
     "build": "tsds build",
     "build-binaries": "node scripts/build-binaries.mjs",
     "format": "biome check --write --unsafe src/ test/ scripts/",
-    "test": "tsds test:node --no-timeouts",
-    "test:engines": "nvu engines npm test",
+    "test": "mocha --no-timeouts test/**/*.test.*",
+    "test:engines": "nvu engines tsds test:node --no-timeouts",
     "version": "tsds version"
   },
   "dependencies": {

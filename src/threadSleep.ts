@@ -1,6 +1,6 @@
 import Module from 'module';
 
-import type { ThreadSleepFunction } from './types.js';
+import type { ThreadSleepFunction } from './types.ts';
 
 const _require = typeof require === 'undefined' ? Module.createRequire(import.meta.url) : require;
 

@@ -1,7 +1,7 @@
 import { getAbi } from 'node-abi';
 import path from 'path';
 
-import type { Options } from '../types.js';
+import type { Options } from '../types.ts';
 
 const root = path.join(__dirname, '..', '..', '..');
 const pkg = require(path.join(root, 'package.json'));

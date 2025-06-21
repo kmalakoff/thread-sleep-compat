@@ -6,13 +6,12 @@ const _require = typeof require === 'undefined' ? Module.createRequire(import.me
 
 const major = +process.versions.node.split('.')[0];
 const minor = +process.versions.node.split('.')[1];
-const path = '../../assets/thread-sleep/index.cjs';
 
 let threadSleep: ThreadSleepFunction = null;
 
 if (major === 0 && minor < 12) {
   try {
-    threadSleep = _require(path) as ThreadSleepFunction;
+    threadSleep = _require('../../assets/thread-sleep/index.cjs') as ThreadSleepFunction;
   } catch (err) {
     console.log(err);
     threadSleep = () => {};

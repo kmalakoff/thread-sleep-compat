@@ -1,4 +1,4 @@
-export * from './types.js';
+export * from './types.ts';
 
-import threadSleep from './threadSleep.js';
+import threadSleep from './threadSleep.ts';
 export default threadSleep;

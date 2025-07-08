@@ -1,6 +1,7 @@
-const assert = require('assert');
+import assert from 'assert';
 
-const sleep = require('thread-sleep-compat');
+// @ts-ignore
+import sleep from 'thread-sleep-compat';
 
 describe('thread-sleep-compat', () => {
   it('should sleep', () => {
@@ -9,7 +10,7 @@ describe('thread-sleep-compat', () => {
 
   it('should pass thread-sleep tests', () => {
     try {
-      sleep('string');
+      sleep('string' as unknown as number);
       throw new Error('sleep with a string should throw an error');
     } catch (ex) {
       assert(ex instanceof TypeError);
@@ -38,7 +39,7 @@ describe('thread-sleep-compat', () => {
       return value < 0 ? value * -1 : value;
     }
     const start = Date.now();
-    const res = sleep(1000);
+    const res = sleep(1000) as number;
     const end = Date.now();
     assert(abs(1000 - res) < 200);
     assert(abs(1000 - (end - start)) < 200);

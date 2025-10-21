@@ -1,6 +1,5 @@
 import assert from 'assert';
 
-// @ts-ignore
 import sleep from 'thread-sleep-compat';
 
 describe('thread-sleep-compat', () => {

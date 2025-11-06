@@ -1,6 +1,6 @@
 {
   "name": "thread-sleep-compat",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "thread-sleep the runs on multiple versions of node",
   "keywords": [
     "thread-sleep",

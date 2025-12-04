@@ -32,7 +32,7 @@
   "scripts": {
     "build": "tsds build",
     "build-binaries": "node scripts/build-binaries.mjs",
-    "format": "biome check --write --unsafe src/ test/ scripts/",
+    "format": "tsds format",
     "prepublishOnly": "tsds validate",
     "test": "tsds test:node --no-timeouts",
     "test:engines": "nvu engines tsds test:node --no-timeouts",
@@ -45,7 +45,6 @@
     "thread-sleep": "*"
   },
   "devDependencies": {
-    "@biomejs/biome": "*",
     "@types/mocha": "*",
     "@types/node": "*",
     "cmake-js": "*",
@@ -57,7 +56,8 @@
     "node-version-use": "*",
     "prebuild": "*",
     "queue-cb": "*",
-    "ts-dev-stack": "*"
+    "ts-dev-stack": "*",
+    "tsds-config": "*"
   },
   "engines": {
     "node": ">=0.8"

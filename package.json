@@ -41,11 +41,8 @@
     "version": "tsds version"
   },
   "dependencies": {
-    "exit": "^0.1.2",
+    "exit-compat": "^1.0.0",
     "mkdirp-classic": "^0.5.3",
-    "nan": "2.14.2",
-    "node-abi": "2.30.1",
-    "semver": "^5.7.1",
     "thread-sleep": "^2.2.0"
   },
   "devDependencies": {
@@ -54,7 +51,8 @@
     "cmake-js": "^7.4.0",
     "cross-spawn-cb": "^2.4.10",
     "fast-extract": "^1.8.12",
-    "node-version-use": "^2.0.0",
+    "nan": "2.14.2",
+    "node-version-use": "^2.1.0",
     "prebuild": "^13.0.1",
     "queue-cb": "^1.6.1",
     "ts-dev-stack": "^1.21.2",

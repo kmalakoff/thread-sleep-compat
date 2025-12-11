@@ -2,9 +2,8 @@ var path = require('path');
 
 var root = path.join(__dirname, '..', '..');
 var dist = path.join(root, 'dist', 'cjs')
-require(path.join(dist, 'lib', 'patchVersions.js'));
 var binaryFilename = require(path.join(dist, 'lib', 'binaryFilename.js'));
-var bindingPath = path.join(root, 'out', binaryFilename(process.versions.node), 'build', 'Release', 'thread_sleep.node');
+var bindingPath = path.join(root, 'out', binaryFilename.default(process.versions.node), 'build', 'Release', 'thread_sleep.node');
 var binding = require(bindingPath);
 
 module.exports = function sleep(milliseconds) {

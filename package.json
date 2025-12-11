@@ -27,39 +27,41 @@
   "files": [
     "dist",
     "assets",
-    "out"
+    "scripts/postinstall.cjs"
   ],
   "scripts": {
     "build": "tsds build",
-    "build-binaries": "node scripts/build-binaries.mjs",
+    "build-binaries": "node scripts/build-binaries.ts",
     "format": "tsds format",
+    "postinstall": "node scripts/postinstall.cjs",
     "prepublishOnly": "tsds validate",
+    "pretest": "node scripts/ensure-test-binaries.ts",
     "test": "tsds test:node --no-timeouts",
     "test:engines": "nvu engines tsds test:node --no-timeouts",
     "version": "tsds version"
   },
   "dependencies": {
-    "nan": "^2.16.0",
+    "exit": "^0.1.2",
+    "mkdirp-classic": "^0.5.3",
+    "nan": "2.14.2",
     "node-abi": "2.30.1",
     "semver": "^5.7.1",
-    "thread-sleep": "*"
+    "thread-sleep": "^2.2.0"
   },
   "devDependencies": {
-    "@types/mocha": "*",
-    "@types/node": "*",
-    "cmake-js": "*",
-    "cross-spawn-cb": "*",
-    "fast-extract": "*",
-    "lodash.find": "*",
-    "node-filename-to-dist-paths": "*",
-    "node-semvers": "*",
-    "node-version-use": "*",
-    "prebuild": "*",
-    "queue-cb": "*",
-    "ts-dev-stack": "*",
-    "tsds-config": "*"
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^25.0.0",
+    "cmake-js": "^7.4.0",
+    "cross-spawn-cb": "^2.4.10",
+    "fast-extract": "^1.8.12",
+    "node-version-use": "^2.0.0",
+    "prebuild": "^13.0.1",
+    "queue-cb": "^1.6.1",
+    "ts-dev-stack": "^1.21.2",
+    "tsds-config": "^0.2.0"
   },
   "engines": {
     "node": ">=0.8"
-  }
+  },
+  "binaryVersion": "1.0.0"
 }

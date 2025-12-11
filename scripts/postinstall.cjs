@@ -32,11 +32,32 @@ var root = path.join(__dirname, '..');
 var pkg = require(path.join(root, 'package.json'));
 
 /**
+ * Get ALL architectures for the current platform
+ * Old Node versions may run under emulation (Rosetta, QEMU, WoW64)
+ * so we download all available binaries for the platform
+ */
+function getArchitectures() {
+  var platform = os.platform();
+
+  if (platform === 'darwin') {
+    return ['arm64', 'x64'];
+  }
+  if (platform === 'linux') {
+    return ['arm64', 'arm', 'x64'];
+  }
+  if (platform === 'win32') {
+    return ['ia32', 'x64'];
+  }
+
+  // Fallback to current arch for unknown platforms
+  return [os.arch()];
+}
+
+/**
  * Get the download URL for the binary archive
  */
-function getDownloadUrl(abiVersion) {
+function getDownloadUrl(abiVersion, arch) {
   var platform = os.platform();
-  var arch = os.arch();
   var filename = [pkg.name, 'node', abiVersion, platform, arch].join('-');
   var archiveName = filename + '.tar.gz';
   return {
@@ -119,12 +140,13 @@ function downloadFile(url, destPath, callback) {
 
 /**
  * Extract tar.gz archive
+ * Available on: macOS, Linux, Windows 10+
  */
 function extractArchive(archivePath, destDir, callback) {
   var tar = spawn('tar', ['-xzf', archivePath, '-C', destDir]);
   tar.on('close', function (code) {
     if (code !== 0) {
-      callback(new Error('Failed to extract archive, exit code: ' + code));
+      callback(new Error('tar failed with exit code ' + code));
       return;
     }
     callback(null);
@@ -137,8 +159,8 @@ function extractArchive(archivePath, destDir, callback) {
 /**
  * Download and extract a single binary
  */
-function downloadBinary(abiVersion, outDir, callback) {
-  var info = getDownloadUrl(abiVersion);
+function downloadBinary(abiVersion, arch, outDir, callback) {
+  var info = getDownloadUrl(abiVersion, arch);
   var destDir = path.join(outDir, info.filename);
 
   // Check if binary already exists
@@ -148,7 +170,7 @@ function downloadBinary(abiVersion, outDir, callback) {
     return;
   }
 
-  var tempPath = path.join(getTmpDir(), 'thread-sleep-compat-' + abiVersion + '-' + Date.now() + '.tar.gz');
+  var tempPath = path.join(getTmpDir(), 'thread-sleep-compat-' + abiVersion + '-' + arch + '-' + Date.now() + '.tar.gz');
 
   downloadFile(info.url, tempPath, function (downloadErr) {
     if (downloadErr) {
@@ -184,24 +206,38 @@ function downloadBinary(abiVersion, outDir, callback) {
 }
 
 /**
+ * Build list of all downloads needed (ABIs × architectures)
+ */
+function getDownloadList() {
+  var archs = getArchitectures();
+  var downloads = [];
+  for (var i = 0; i < ABI_VERSIONS.length; i++) {
+    for (var j = 0; j < archs.length; j++) {
+      downloads.push({ abi: ABI_VERSIONS[i], arch: archs[j] });
+    }
+  }
+  return downloads;
+}
+
+/**
  * Download binaries sequentially (callback-based for Node 0.8 compat)
  */
-function downloadAll(abiVersions, outDir, index, results, callback) {
-  if (index >= abiVersions.length) {
+function downloadAll(downloads, outDir, index, results, callback) {
+  if (index >= downloads.length) {
     callback(null, results);
     return;
   }
 
-  var abiVersion = abiVersions[index];
-  console.log('postinstall: Downloading binary for ABI ' + abiVersion + '...');
+  var item = downloads[index];
+  console.log('postinstall: Downloading binary for ABI ' + item.abi + ' (' + item.arch + ')...');
 
-  downloadBinary(abiVersion, outDir, function (err, status) {
+  downloadBinary(item.abi, item.arch, outDir, function (err, status) {
     if (err) {
-      results.push({ abi: abiVersion, error: err.message || String(err) });
+      results.push({ abi: item.abi, arch: item.arch, error: err.message || String(err) });
     } else {
-      results.push({ abi: abiVersion, status: status });
+      results.push({ abi: item.abi, arch: item.arch, status: status });
     }
-    downloadAll(abiVersions, outDir, index + 1, results, callback);
+    downloadAll(downloads, outDir, index + 1, results, callback);
   });
 }
 
@@ -210,16 +246,18 @@ function downloadAll(abiVersions, outDir, index, results, callback) {
  */
 function main() {
   var platform = os.platform();
-  var arch = os.arch();
+  var archs = getArchitectures();
 
-  console.log('postinstall: Installing thread-sleep-compat binaries for ' + platform + '-' + arch);
+  console.log('postinstall: Installing thread-sleep-compat binaries for ' + platform + ' (' + archs.join(', ') + ')');
 
   var outDir = path.join(root, 'out');
 
   // Create output directory
   mkdirp.sync(outDir);
 
-  downloadAll(ABI_VERSIONS, outDir, 0, [], function (_err, results) {
+  var downloads = getDownloadList();
+
+  downloadAll(downloads, outDir, 0, [], function (_err, results) {
     var succeeded = 0;
     var failed = 0;
     var existed = 0;
@@ -229,9 +267,9 @@ function main() {
       if (r.error) {
         failed++;
         if (r.error.indexOf('404') >= 0) {
-          console.log('postinstall: Binary for ABI ' + r.abi + ' not available');
+          console.log('postinstall: Binary for ' + r.abi + '-' + r.arch + ' not available');
         } else {
-          console.log('postinstall: Failed to download ABI ' + r.abi + ': ' + r.error);
+          console.log('postinstall: Failed to download ' + r.abi + '-' + r.arch + ': ' + r.error);
         }
       } else if (r.status === 'exists') {
         existed++;
@@ -248,7 +286,7 @@ function main() {
     }
     if (failed === results.length) {
       console.log('');
-      console.log('postinstall: No binaries available for ' + platform + '-' + arch);
+      console.log('postinstall: No binaries available for ' + platform);
       console.log('thread-sleep-compat will work on Node >= 0.12 but not on older versions.');
     }
 

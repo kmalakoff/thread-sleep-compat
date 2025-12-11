@@ -1,63 +1,43 @@
 import spawn from 'cross-spawn-cb';
 import extract from 'fast-extract';
 import fs from 'fs';
-import find from 'lodash.find';
-import { getAbi } from 'node-abi';
-import { getDists } from 'node-filename-to-dist-paths';
-import NodeVersions from 'node-semvers';
 import path from 'path';
 import Queue from 'queue-cb';
 import url from 'url';
 
-import '../dist/cjs/lib/patchVersions.cjs';
-import binaryFilename from '../dist/cjs/lib/binaryFilename.cjs';
+import '../dist/cjs/lib/patchVersions.js';
+import binaryFilename from '../dist/cjs/lib/binaryFilename.js';
 
 const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 
-const versions = NodeVersions.loadSync()
-  .resolve('<=0.11.0')
-  .filter((x) => +x.split('.')[1] % 2 === 0);
-
-const FILE_PLATFORM_MAP = {
-  win: 'win32',
-  osx: 'darwin',
+// Known architectures per platform (using process.arch values)
+const PLATFORM_ARCHS: Record<string, string[]> = {
+  darwin: ['x64', 'arm64'],
+  linux: ['x64', 'arm64', 'arm'],
+  win32: ['x64', 'ia32'],
 };
-const PLAFORM_ARCHS = {};
-getDists().forEach((dist) => {
-  dist.files.forEach((file) => {
-    const parts = file.split('-');
-    if (parts.length < 2) return;
-    const platform = FILE_PLATFORM_MAP[parts[0]] || parts[0];
-    const arch = parts[1];
-    if (!PLAFORM_ARCHS[platform]) PLAFORM_ARCHS[platform] = [];
-    if (PLAFORM_ARCHS[platform].indexOf(arch) < 0) PLAFORM_ARCHS[platform].push(arch);
-  });
-});
+
+// Known ABIs for Node < 0.12 (normalized to decimal strings)
+// ABI 1: Node 0.8.x and earlier
+// ABI 11: Node 0.10.x
+// Note: ABI 14 (Node 0.11.x) skipped - unstable dev branch, not widely used
+const ABIS = [
+  { abi: '1', version: '0.8.28' },
+  { abi: '11', version: '0.10.48' },
+];
 
 function findBuilds() {
-  const builds = [];
-  versions.reverse().forEach((x) => {
-    const version = x.slice(1);
-    let abi = null;
-    try {
-      abi = getAbi(version, 'node');
-    } catch (_err) {
-      return;
+  const builds: Array<{ abi: string; version: string; arch: string }> = [];
+  const archs = PLATFORM_ARCHS[process.platform] || [process.arch];
+
+  for (const { abi, version } of ABIS) {
+    for (const arch of archs) {
+      builds.push({ abi, version, arch });
     }
-    const found = find(builds, (y) => y.abi === abi);
-    if (!found) {
-      const archs = PLAFORM_ARCHS[process.platform];
-      for (let i = 0; i < archs.length; i++) {
-        builds.push({
-          abi: abi,
-          version: version,
-          arch: archs[i],
-        });
-      }
-    }
-  });
+  }
+
   return builds;
 }
 

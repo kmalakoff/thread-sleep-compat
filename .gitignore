@@ -15,4 +15,4 @@ CLAUDE.md
 # local
 build/
 prebuilds/
-!out/**/build/
+out/

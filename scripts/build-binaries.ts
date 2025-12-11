@@ -5,7 +5,6 @@ import path from 'path';
 import Queue from 'queue-cb';
 import url from 'url';
 
-import '../dist/cjs/lib/patchVersions.js';
 import binaryFilename from '../dist/cjs/lib/binaryFilename.js';
 
 const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));

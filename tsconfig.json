@@ -4,6 +4,6 @@
     "outDir": "dist",
     "types": ["mocha", "node"]
   },
-  "include": ["src", "test"],
+  "include": ["src", "test", "scrpts/build-binaries.ts"],
   "exclude": ["node_modules", "dist", "test/data"]
 }

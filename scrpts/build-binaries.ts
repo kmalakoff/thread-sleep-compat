@@ -69,7 +69,10 @@ function buildOutput(build, callback) {
       if (err) return callback(); // src does not exist
       fs.stat(dest, (err) => {
         if (!err) return callback(); // exists
-        extract(src, dest, {}, callback);
+        extract(src, dest, {}, (err) => {
+          callback(err);
+          return;
+        });
       });
     });
   });

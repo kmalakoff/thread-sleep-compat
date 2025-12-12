@@ -5,24 +5,18 @@
  * since we don't know which Node version will actually run this module.
  */
 
-import { spawn } from 'child_process';
-import exit from 'exit-compat';
-import fs from 'fs';
-import mkdirp from 'mkdirp-classic';
-import Module from 'module';
-import os from 'os';
-import path from 'path';
-import url from 'url';
-
-// CJS/ESM compatibility
-const _require = typeof require === 'undefined' ? Module.createRequire(import.meta.url) : require;
-const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
+const { spawn } = require('child_process');
+const exit = require('exit-compat');
+const fs = require('fs');
+const mkdirp = require('mkdirp-classic');
+const os = require('os');
+const path = require('path');
 
 // Configuration
 const GITHUB_REPO = 'kmalakoff/thread-sleep-compat';
 // Path is relative to dist/cjs/scripts/ at runtime
-const root = path.join(__dirname, '..', '..', '..');
-const pkg = _require(path.join(root, 'package.json'));
+const root = path.join(__dirname, '..');
+const pkg = require(path.join(root, 'package.json'));
 const BINARIES_VERSION = pkg.binaryVersion;
 
 // ABI versions needed for Node < 0.12 (normalized to decimal strings)

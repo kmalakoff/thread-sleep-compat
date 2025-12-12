@@ -41,7 +41,7 @@ jobs:
         run: npm run build
 
       - name: Build binaries for platform
-        run: npm run build-binaries
+        run: npm run build:binaries
 
       - name: Rename archives to strip version
         shell: bash

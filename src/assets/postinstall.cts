@@ -25,6 +25,8 @@ const BINARIES_VERSION = pkg.binaryVersion;
 // Note: ABI 14 (Node 0.11.x) skipped - unstable dev branch, not widely used
 const ABI_VERSIONS = ['v1', 'v11'];
 
+const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+
 type Callback = (err?: Error | null, status?: string) => void;
 type ResultsCallback = (err: Error | null, results: DownloadResult[]) => void;
 
@@ -51,27 +53,19 @@ interface DownloadResult {
  * so we download all available binaries for the platform
  */
 function getArchitectures(): string[] {
-  const platform = os.platform();
-
-  if (platform === 'darwin') {
-    return ['arm64', 'x64'];
-  }
-  if (platform === 'linux') {
-    return ['arm64', 'arm', 'x64'];
-  }
-  if (platform === 'win32') {
-    return ['ia32', 'x64'];
-  }
+  if (isWindows) return ['ia32', 'x64'];
+  if (process.platform === 'darwin') return ['arm64', 'x64'];
+  if (process.platform === 'linux') return ['arm64', 'arm', 'x64'];
 
   // Fallback to current arch for unknown platforms
-  return [os.arch()];
+  return [process.arch];
 }
 
 /**
  * Get the download URL for the binary archive
  */
 function getDownloadUrl(abiVersion: string, arch: string): DownloadInfo {
-  const platform = os.platform();
+  const { platform } = process;
   const filename = [pkg.name, 'node', abiVersion, platform, arch].join('-');
   const archiveName = `${filename}.tar.gz`;
   return {
@@ -143,7 +137,7 @@ function downloadFile(downloadUrl: string, destPath: string, callback: Callback)
     }
 
     // If curl failed and we're on Windows, try PowerShell
-    if (os.platform() === 'win32' && err?.message?.indexOf('ENOENT') >= 0) {
+    if (isWindows && err?.message?.indexOf('ENOENT') >= 0) {
       downloadWithPowerShell(downloadUrl, destPath, callback);
       return;
     }
@@ -263,7 +257,7 @@ function downloadAll(downloads: DownloadItem[], outDir: string, index: number, r
  * Main installation function
  */
 function main(): void {
-  const platform = os.platform();
+  const { platform } = process;
   const archs = getArchitectures();
 
   console.log(`postinstall: Installing thread-sleep-compat binaries for ${platform} (${archs.join(', ')})`);

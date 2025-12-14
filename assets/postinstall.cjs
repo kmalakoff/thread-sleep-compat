@@ -24,40 +24,34 @@ var ABI_VERSIONS = [
     'v1',
     'v11'
 ];
+var isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
 /**
  * Get ALL architectures for the current platform
  * Old Node versions may run under emulation (Rosetta, QEMU, WoW64)
  * so we download all available binaries for the platform
  */ function getArchitectures() {
-    var platform = os.platform();
-    if (platform === 'darwin') {
-        return [
-            'arm64',
-            'x64'
-        ];
-    }
-    if (platform === 'linux') {
-        return [
-            'arm64',
-            'arm',
-            'x64'
-        ];
-    }
-    if (platform === 'win32') {
-        return [
-            'ia32',
-            'x64'
-        ];
-    }
+    if (isWindows) return [
+        'ia32',
+        'x64'
+    ];
+    if (process.platform === 'darwin') return [
+        'arm64',
+        'x64'
+    ];
+    if (process.platform === 'linux') return [
+        'arm64',
+        'arm',
+        'x64'
+    ];
     // Fallback to current arch for unknown platforms
     return [
-        os.arch()
+        process.arch
     ];
 }
 /**
  * Get the download URL for the binary archive
  */ function getDownloadUrl(abiVersion, arch) {
-    var platform = os.platform();
+    var platform = process.platform;
     var filename = [
         pkg.name,
         'node',
@@ -134,7 +128,7 @@ var ABI_VERSIONS = [
             return;
         }
         // If curl failed and we're on Windows, try PowerShell
-        if (os.platform() === 'win32' && (err === null || err === void 0 ? void 0 : (_err_message = err.message) === null || _err_message === void 0 ? void 0 : _err_message.indexOf('ENOENT')) >= 0) {
+        if (isWindows && (err === null || err === void 0 ? void 0 : (_err_message = err.message) === null || _err_message === void 0 ? void 0 : _err_message.indexOf('ENOENT')) >= 0) {
             downloadWithPowerShell(downloadUrl, destPath, callback);
             return;
         }
@@ -250,7 +244,7 @@ var ABI_VERSIONS = [
 /**
  * Main installation function
  */ function main() {
-    var platform = os.platform();
+    var platform = process.platform;
     var archs = getArchitectures();
     console.log("postinstall: Installing thread-sleep-compat binaries for ".concat(platform, " (").concat(archs.join(', '), ")"));
     var outDir = path.join(root, 'out');

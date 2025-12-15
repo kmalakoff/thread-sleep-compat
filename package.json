@@ -40,22 +40,22 @@
     "version": "tsds version"
   },
   "dependencies": {
-    "exit-compat": "^1.0.4",
-    "mkdirp-classic": "^0.5.3",
+    "exit-compat": "^1.0.0",
+    "mkdirp-classic": "^0.5.2",
     "thread-sleep": "^2.2.0"
   },
   "devDependencies": {
-    "@types/mocha": "^10.0.10",
-    "@types/node": "^25.0.2",
+    "@types/mocha": "*",
+    "@types/node": "*",
     "cmake-js": "^7.4.0",
-    "cross-spawn-cb": "^2.4.14",
-    "fast-extract": "^1.8.16",
+    "cross-spawn-cb": "^2.0.0",
+    "fast-extract": "^1.0.0",
     "nan": "2.24.0",
-    "node-version-use": "^2.1.7",
+    "node-version-use": "*",
     "prebuild": "^13.0.1",
-    "queue-cb": "^1.6.3",
-    "ts-dev-stack": "^1.21.3",
-    "tsds-config": "^0.2.2"
+    "queue-cb": "^1.0.0",
+    "ts-dev-stack": "*",
+    "tsds-config": "*"
   },
   "engines": {
     "node": ">=0.8"

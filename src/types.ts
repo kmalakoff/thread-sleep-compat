@@ -4,4 +4,4 @@ export interface Options {
   target?: string;
 }
 
-export type ThreadSleepFunction = (ms: number) => undefined;
+export type ThreadSleepFunction = (ms: number) => number;

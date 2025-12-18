@@ -26,10 +26,10 @@ var ABI_VERSIONS = [
 ];
 var isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
 function homedir() {
-    return typeof os.homedir === 'function' ? os.homedir() : process.env.HOME || process.env.USERPROFILE || '/tmp';
+    return typeof os.homedir === 'function' ? os.homedir() : require('homedir-polyfill')();
 }
 function tmpdir() {
-    return typeof os.tmpdir === 'function' ? os.tmpdir() : process.env.TMPDIR || process.env.TMP || process.env.TEMP || '/tmp';
+    return typeof os.tmpdir === 'function' ? os.tmpdir() : require('os-shim').tmpdir();
 }
 // Storage path in user's home directory
 // Allow STC_HOME override for testing

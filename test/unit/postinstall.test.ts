@@ -15,7 +15,7 @@ const pkg = _require(path.join(root, 'package.json'));
 const BINARIES_VERSION = pkg.binaryVersion;
 
 function tmpdir(): string {
-  return typeof os.tmpdir === 'function' ? os.tmpdir() : process.env.TMPDIR || process.env.TMP || process.env.TEMP || '/tmp';
+  return typeof os.tmpdir === 'function' ? os.tmpdir() : require('os-shim').tmpdir();
 }
 
 /**

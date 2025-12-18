@@ -14,7 +14,9 @@ if (major === 0 && minor < 12) {
     threadSleep = _require('../../assets/thread-sleep/index.cjs') as ThreadSleepFunction;
   } catch (err) {
     console.log(err);
-    threadSleep = () => {};
+    threadSleep = () => {
+      return 0;
+    };
   }
 } else threadSleep = _require('thread-sleep') as ThreadSleepFunction;
 

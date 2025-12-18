@@ -77,15 +77,21 @@ var isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.e
         '-L',
         '-f',
         '-s',
+        '--connect-timeout',
+        '30',
+        '--max-time',
+        '120',
         '-o',
         destPath,
         downloadUrl
     ]);
     curl.on('close', function(code) {
         if (code !== 0) {
-            // curl exit codes: 22 = HTTP error (4xx/5xx), 56 = receive error (often 404 with -f)
+            // curl exit codes: 22 = HTTP error (4xx/5xx), 28 = timeout, 56 = receive error (often 404 with -f)
             if (code === 22 || code === 56) {
                 callback(new Error('HTTP 404'));
+            } else if (code === 28) {
+                callback(new Error('Connection timeout'));
             } else {
                 callback(new Error("curl failed with exit code ".concat(code)));
             }
@@ -123,10 +129,7 @@ var isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.e
  */ function downloadFile(downloadUrl, destPath, callback) {
     downloadWithCurl(downloadUrl, destPath, function(err) {
         var _err_message;
-        if (!err) {
-            callback(null);
-            return;
-        }
+        if (!err) return callback(null);
         // If curl failed and we're on Windows, try PowerShell
         if (isWindows && (err === null || err === void 0 ? void 0 : (_err_message = err.message) === null || _err_message === void 0 ? void 0 : _err_message.indexOf('ENOENT')) >= 0) {
             downloadWithPowerShell(downloadUrl, destPath, callback);
@@ -192,10 +195,7 @@ var isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.e
                 // ignore
                 }
             }
-            if (extractErr) {
-                callback(extractErr);
-                return;
-            }
+            if (extractErr) return callback(extractErr);
             callback(null, 'downloaded');
         });
     });
@@ -218,10 +218,7 @@ var isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.e
 /**
  * Download binaries sequentially (callback-based for Node 0.8 compat)
  */ function downloadAll(downloads, outDir, index, results, callback) {
-    if (index >= downloads.length) {
-        callback(null, results);
-        return;
-    }
+    if (index >= downloads.length) return callback(null, results);
     var item = downloads[index];
     console.log("postinstall: Downloading binary for ABI ".concat(item.abi, " (").concat(item.arch, ")..."));
     downloadBinary(item.abi, item.arch, outDir, function(err, status) {

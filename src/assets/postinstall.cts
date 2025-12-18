@@ -84,14 +84,16 @@ function getTmpDir(): string {
 /**
  * Download using curl (macOS, Linux, Windows 10+)
  */
-function downloadWithCurl(downloadUrl: string, destPath: string, callback: Callback): void {
-  const curl = spawn('curl', ['-L', '-f', '-s', '-o', destPath, downloadUrl]);
+function downloadWithCurl(downloadUrl: string, destPath: string, callback: Callback) {
+  const curl = spawn('curl', ['-L', '-f', '-s', '--connect-timeout', '30', '--max-time', '120', '-o', destPath, downloadUrl]);
 
   curl.on('close', (code) => {
     if (code !== 0) {
-      // curl exit codes: 22 = HTTP error (4xx/5xx), 56 = receive error (often 404 with -f)
+      // curl exit codes: 22 = HTTP error (4xx/5xx), 28 = timeout, 56 = receive error (often 404 with -f)
       if (code === 22 || code === 56) {
         callback(new Error('HTTP 404'));
+      } else if (code === 28) {
+        callback(new Error('Connection timeout'));
       } else {
         callback(new Error(`curl failed with exit code ${code}`));
       }
@@ -108,7 +110,7 @@ function downloadWithCurl(downloadUrl: string, destPath: string, callback: Callb
 /**
  * Download using PowerShell (Windows 7+ fallback)
  */
-function downloadWithPowerShell(downloadUrl: string, destPath: string, callback: Callback): void {
+function downloadWithPowerShell(downloadUrl: string, destPath: string, callback: Callback) {
   const psCommand = `Invoke-WebRequest -Uri "${downloadUrl}" -OutFile "${destPath}" -UseBasicParsing`;
   const ps = spawn('powershell', ['-NoProfile', '-Command', psCommand]);
 
@@ -129,12 +131,9 @@ function downloadWithPowerShell(downloadUrl: string, destPath: string, callback:
  * Download a file - tries curl first, falls back to PowerShell on Windows
  * Node 0.8's OpenSSL doesn't support TLS 1.2+ required by GitHub
  */
-function downloadFile(downloadUrl: string, destPath: string, callback: Callback): void {
+function downloadFile(downloadUrl: string, destPath: string, callback: Callback) {
   downloadWithCurl(downloadUrl, destPath, (err) => {
-    if (!err) {
-      callback(null);
-      return;
-    }
+    if (!err) return callback(null);
 
     // If curl failed and we're on Windows, try PowerShell
     if (isWindows && err?.message?.indexOf('ENOENT') >= 0) {
@@ -150,7 +149,7 @@ function downloadFile(downloadUrl: string, destPath: string, callback: Callback)
  * Extract tar.gz archive
  * Available on: macOS, Linux, Windows 10+
  */
-function extractArchive(archivePath: string, destDir: string, callback: Callback): void {
+function extractArchive(archivePath: string, destDir: string, callback: Callback) {
   const tar = spawn('tar', ['-xzf', archivePath, '-C', destDir]);
   tar.on('close', (code) => {
     if (code !== 0) {
@@ -167,7 +166,7 @@ function extractArchive(archivePath: string, destDir: string, callback: Callback
 /**
  * Download and extract a single binary
  */
-function downloadBinary(abiVersion: string, arch: string, outDir: string, callback: Callback): void {
+function downloadBinary(abiVersion: string, arch: string, outDir: string, callback: Callback) {
   const info = getDownloadUrl(abiVersion, arch);
   const destDir = path.join(outDir, info.filename);
 
@@ -207,10 +206,7 @@ function downloadBinary(abiVersion: string, arch: string, outDir: string, callba
         }
       }
 
-      if (extractErr) {
-        callback(extractErr);
-        return;
-      }
+      if (extractErr) return callback(extractErr);
 
       callback(null, 'downloaded');
     });
@@ -234,11 +230,8 @@ function getDownloadList(): DownloadItem[] {
 /**
  * Download binaries sequentially (callback-based for Node 0.8 compat)
  */
-function downloadAll(downloads: DownloadItem[], outDir: string, index: number, results: DownloadResult[], callback: ResultsCallback): void {
-  if (index >= downloads.length) {
-    callback(null, results);
-    return;
-  }
+function downloadAll(downloads: DownloadItem[], outDir: string, index: number, results: DownloadResult[], callback: ResultsCallback) {
+  if (index >= downloads.length) return callback(null, results);
 
   const item = downloads[index];
   console.log(`postinstall: Downloading binary for ABI ${item.abi} (${item.arch})...`);

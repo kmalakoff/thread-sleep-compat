@@ -25,6 +25,17 @@ var ABI_VERSIONS = [
     'v11'
 ];
 var isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+function homedir() {
+    return typeof os.homedir === 'function' ? os.homedir() : process.env.HOME || process.env.USERPROFILE || '/tmp';
+}
+function tmpdir() {
+    return typeof os.tmpdir === 'function' ? os.tmpdir() : process.env.TMPDIR || process.env.TMP || process.env.TEMP || '/tmp';
+}
+// Storage path in user's home directory
+// Allow STC_HOME override for testing
+var storagePath = process.env.STC_HOME || path.join(homedir(), '.stc');
+var binDir = path.join(storagePath, 'bin');
+var versionFile = path.join(binDir, 'version.txt');
 /**
  * Get ALL architectures for the current platform
  * Old Node versions may run under emulation (Rosetta, QEMU, WoW64)
@@ -66,9 +77,65 @@ var isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.e
     };
 }
 /**
- * Get temp directory (compatible with Node 0.8)
- */ function getTmpDir() {
-    return typeof os.tmpdir === 'function' ? os.tmpdir() : process.env.TMPDIR || process.env.TMP || process.env.TEMP || '/tmp';
+ * Safely remove a file if it exists
+ */ function removeIfExistsSync(filePath) {
+    if (fs.existsSync(filePath)) {
+        try {
+            fs.unlinkSync(filePath);
+        } catch (_e) {
+        // ignore cleanup errors
+        }
+    }
+}
+/**
+ * Copy file contents
+ */ function copyFileSync(src, dest) {
+    var content = fs.readFileSync(src);
+    fs.writeFileSync(dest, content);
+}
+/**
+ * Recursively copy a directory
+ */ function copyDirSync(src, dest) {
+    mkdirp.sync(dest);
+    var files = fs.readdirSync(src);
+    for(var i = 0; i < files.length; i++){
+        var srcPath = path.join(src, files[i]);
+        var destPath = path.join(dest, files[i]);
+        if (fs.statSync(srcPath).isDirectory()) {
+            copyDirSync(srcPath, destPath);
+        } else {
+            copyFileSync(srcPath, destPath);
+        }
+    }
+}
+/**
+ * Atomic rename with fallback to copy+delete for cross-device moves
+ * Works for both files and directories
+ */ function atomicRename(src, dest, callback) {
+    fs.rename(src, dest, function(err) {
+        if (!err) {
+            callback(null);
+            return;
+        }
+        // Cross-device link error - fall back to copy + delete
+        if (err.code === 'EXDEV') {
+            try {
+                var stat = fs.statSync(src);
+                if (stat.isDirectory()) {
+                    copyDirSync(src, dest);
+                    rmdirSyncRecursive(src);
+                } else {
+                    copyFileSync(src, dest);
+                    fs.unlinkSync(src);
+                }
+                callback(null);
+            } catch (copyErr) {
+                callback(copyErr);
+            }
+            return;
+        }
+        callback(err);
+    });
 }
 /**
  * Download using curl (macOS, Linux, Windows 10+)
@@ -160,7 +227,22 @@ var isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.e
     });
 }
 /**
- * Download and extract a single binary
+ * Recursively remove a directory (Node 0.8 compatible)
+ */ function rmdirSyncRecursive(dirPath) {
+    if (!fs.existsSync(dirPath)) return;
+    var files = fs.readdirSync(dirPath);
+    for(var i = 0; i < files.length; i++){
+        var filePath = path.join(dirPath, files[i]);
+        if (fs.statSync(filePath).isDirectory()) {
+            rmdirSyncRecursive(filePath);
+        } else {
+            fs.unlinkSync(filePath);
+        }
+    }
+    fs.rmdirSync(dirPath);
+}
+/**
+ * Download and extract a single binary with atomic rename
  */ function downloadBinary(abiVersion, arch, outDir, callback) {
     var info = getDownloadUrl(abiVersion, arch);
     var destDir = path.join(outDir, info.filename);
@@ -170,33 +252,38 @@ var isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.e
         callback(null, 'exists');
         return;
     }
-    var tempPath = path.join(getTmpDir(), "thread-sleep-compat-".concat(abiVersion, "-").concat(arch, "-").concat(Date.now(), ".tar.gz"));
-    downloadFile(info.url, tempPath, function(downloadErr) {
+    var timestamp = Date.now();
+    var tempArchive = path.join(tmpdir(), "thread-sleep-compat-".concat(abiVersion, "-").concat(arch, "-").concat(timestamp, ".tar.gz"));
+    var tempExtractDir = path.join(tmpdir(), "thread-sleep-compat-extract-".concat(abiVersion, "-").concat(arch, "-").concat(timestamp));
+    downloadFile(info.url, tempArchive, function(downloadErr) {
         if (downloadErr) {
-            // Clean up temp file if it exists
-            if (fs.existsSync(tempPath)) {
-                try {
-                    fs.unlinkSync(tempPath);
-                } catch (_e) {
-                // ignore
-                }
-            }
+            removeIfExistsSync(tempArchive);
             callback(downloadErr);
             return;
         }
-        // Create destination directory before extracting
-        mkdirp.sync(destDir);
-        extractArchive(tempPath, destDir, function(extractErr) {
-            // Clean up temp file
-            if (fs.existsSync(tempPath)) {
-                try {
-                    fs.unlinkSync(tempPath);
-                } catch (_e) {
-                // ignore
-                }
+        // Create temp extraction directory
+        mkdirp.sync(tempExtractDir);
+        extractArchive(tempArchive, tempExtractDir, function(extractErr) {
+            // Clean up temp archive
+            removeIfExistsSync(tempArchive);
+            if (extractErr) {
+                rmdirSyncRecursive(tempExtractDir);
+                callback(extractErr);
+                return;
             }
-            if (extractErr) return callback(extractErr);
-            callback(null, 'downloaded');
+            // Ensure parent directory exists
+            mkdirp.sync(outDir);
+            // Remove existing destDir if present (for upgrade case)
+            rmdirSyncRecursive(destDir);
+            // Atomic rename from temp to final location
+            atomicRename(tempExtractDir, destDir, function(renameErr) {
+                if (renameErr) {
+                    rmdirSyncRecursive(tempExtractDir);
+                    callback(renameErr);
+                    return;
+                }
+                callback(null, 'downloaded');
+            });
         });
     });
 }
@@ -243,12 +330,25 @@ var isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.e
  */ function main() {
     var platform = process.platform;
     var archs = getArchitectures();
+    // Check if already installed with matching version
+    if (fs.existsSync(versionFile)) {
+        try {
+            var installedVersion = fs.readFileSync(versionFile, 'utf8');
+            if (installedVersion === BINARIES_VERSION) {
+                console.log("postinstall: Binaries already installed (v".concat(BINARIES_VERSION, ")"));
+                exit(0);
+                return;
+            }
+            console.log("postinstall: Upgrading binaries from v".concat(installedVersion, " to v").concat(BINARIES_VERSION));
+        } catch (_e) {
+        // version file unreadable, continue with download
+        }
+    }
     console.log("postinstall: Installing thread-sleep-compat binaries for ".concat(platform, " (").concat(archs.join(', '), ")"));
-    var outDir = path.join(root, 'out');
-    // Create output directory
-    mkdirp.sync(outDir);
+    // Create output directory in user's home
+    mkdirp.sync(binDir);
     var downloads = getDownloadList();
-    downloadAll(downloads, outDir, 0, [], function(_err, results) {
+    downloadAll(downloads, binDir, 0, [], function(_err, results) {
         var succeeded = 0;
         var failed = 0;
         var existed = 0;
@@ -277,6 +377,14 @@ var isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.e
             console.log('');
             console.log("postinstall: No binaries available for ".concat(platform));
             console.log('thread-sleep-compat will work on Node >= 0.12 but not on older versions.');
+        }
+        // Write version file after successful installation
+        if (succeeded > 0 || existed > 0) {
+            try {
+                fs.writeFileSync(versionFile, BINARIES_VERSION, 'utf8');
+            } catch (_e) {
+            // ignore version file write errors
+            }
         }
         exit(0);
     });

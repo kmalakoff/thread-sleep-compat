@@ -1,9 +1,23 @@
+var os = require('os');
 var path = require('path');
+
+/**
+ * Get home directory (compatible with Node 0.8)
+ */
+function homedir() {
+  if (typeof os.homedir === 'function') return os.homedir();
+  return process.env.HOME || process.env.USERPROFILE || '/tmp';
+}
 
 var root = path.join(__dirname, '..', '..');
 var dist = path.join(root, 'dist', 'cjs')
 var binaryFilename = require(path.join(dist, 'lib', 'binaryFilename.js'));
-var bindingPath = path.join(root, 'out', binaryFilename.default(process.versions.node), 'build', 'Release', 'thread_sleep.node');
+
+// Binaries are cached in ~/.stc/bin/
+// Allow STC_HOME override for testing
+var storagePath = process.env.STC_HOME || path.join(homedir(), '.stc');
+var binDir = path.join(storagePath, 'bin');
+var bindingPath = path.join(binDir, binaryFilename.default(process.versions.node), 'build', 'Release', 'thread_sleep.node');
 var binding = require(bindingPath);
 
 module.exports = function sleep(milliseconds) {

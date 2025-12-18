@@ -27,6 +27,20 @@ const ABI_VERSIONS = ['v1', 'v11'];
 
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
 
+function homedir(): string {
+  return typeof os.homedir === 'function' ? os.homedir() : process.env.HOME || process.env.USERPROFILE || '/tmp';
+}
+
+function tmpdir(): string {
+  return typeof os.tmpdir === 'function' ? os.tmpdir() : process.env.TMPDIR || process.env.TMP || process.env.TEMP || '/tmp';
+}
+
+// Storage path in user's home directory
+// Allow STC_HOME override for testing
+const storagePath = process.env.STC_HOME || path.join(homedir(), '.stc');
+const binDir = path.join(storagePath, 'bin');
+const versionFile = path.join(binDir, 'version.txt');
+
 type Callback = (err?: Error | null, status?: string) => void;
 type ResultsCallback = (err: Error | null, results: DownloadResult[]) => void;
 
@@ -75,10 +89,72 @@ function getDownloadUrl(abiVersion: string, arch: string): DownloadInfo {
 }
 
 /**
- * Get temp directory (compatible with Node 0.8)
+ * Safely remove a file if it exists
  */
-function getTmpDir(): string {
-  return typeof os.tmpdir === 'function' ? os.tmpdir() : process.env.TMPDIR || process.env.TMP || process.env.TEMP || '/tmp';
+function removeIfExistsSync(filePath: string): void {
+  if (fs.existsSync(filePath)) {
+    try {
+      fs.unlinkSync(filePath);
+    } catch (_e) {
+      // ignore cleanup errors
+    }
+  }
+}
+
+/**
+ * Copy file contents
+ */
+function copyFileSync(src: string, dest: string): void {
+  const content = fs.readFileSync(src);
+  fs.writeFileSync(dest, content);
+}
+
+/**
+ * Recursively copy a directory
+ */
+function copyDirSync(src: string, dest: string): void {
+  mkdirp.sync(dest);
+  const files = fs.readdirSync(src);
+  for (let i = 0; i < files.length; i++) {
+    const srcPath = path.join(src, files[i]);
+    const destPath = path.join(dest, files[i]);
+    if (fs.statSync(srcPath).isDirectory()) {
+      copyDirSync(srcPath, destPath);
+    } else {
+      copyFileSync(srcPath, destPath);
+    }
+  }
+}
+
+/**
+ * Atomic rename with fallback to copy+delete for cross-device moves
+ * Works for both files and directories
+ */
+function atomicRename(src: string, dest: string, callback: Callback): void {
+  fs.rename(src, dest, (err) => {
+    if (!err) {
+      callback(null);
+      return;
+    }
+    // Cross-device link error - fall back to copy + delete
+    if ((err as NodeJS.ErrnoException).code === 'EXDEV') {
+      try {
+        const stat = fs.statSync(src);
+        if (stat.isDirectory()) {
+          copyDirSync(src, dest);
+          rmdirSyncRecursive(src);
+        } else {
+          copyFileSync(src, dest);
+          fs.unlinkSync(src);
+        }
+        callback(null);
+      } catch (copyErr) {
+        callback(copyErr as Error);
+      }
+      return;
+    }
+    callback(err);
+  });
 }
 
 /**
@@ -164,7 +240,24 @@ function extractArchive(archivePath: string, destDir: string, callback: Callback
 }
 
 /**
- * Download and extract a single binary
+ * Recursively remove a directory (Node 0.8 compatible)
+ */
+function rmdirSyncRecursive(dirPath: string): void {
+  if (!fs.existsSync(dirPath)) return;
+  const files = fs.readdirSync(dirPath);
+  for (let i = 0; i < files.length; i++) {
+    const filePath = path.join(dirPath, files[i]);
+    if (fs.statSync(filePath).isDirectory()) {
+      rmdirSyncRecursive(filePath);
+    } else {
+      fs.unlinkSync(filePath);
+    }
+  }
+  fs.rmdirSync(dirPath);
+}
+
+/**
+ * Download and extract a single binary with atomic rename
  */
 function downloadBinary(abiVersion: string, arch: string, outDir: string, callback: Callback) {
   const info = getDownloadUrl(abiVersion, arch);
@@ -177,38 +270,45 @@ function downloadBinary(abiVersion: string, arch: string, outDir: string, callba
     return;
   }
 
-  const tempPath = path.join(getTmpDir(), `thread-sleep-compat-${abiVersion}-${arch}-${Date.now()}.tar.gz`);
+  const timestamp = Date.now();
+  const tempArchive = path.join(tmpdir(), `thread-sleep-compat-${abiVersion}-${arch}-${timestamp}.tar.gz`);
+  const tempExtractDir = path.join(tmpdir(), `thread-sleep-compat-extract-${abiVersion}-${arch}-${timestamp}`);
 
-  downloadFile(info.url, tempPath, (downloadErr) => {
+  downloadFile(info.url, tempArchive, (downloadErr) => {
     if (downloadErr) {
-      // Clean up temp file if it exists
-      if (fs.existsSync(tempPath)) {
-        try {
-          fs.unlinkSync(tempPath);
-        } catch (_e) {
-          // ignore
-        }
-      }
+      removeIfExistsSync(tempArchive);
       callback(downloadErr);
       return;
     }
 
-    // Create destination directory before extracting
-    mkdirp.sync(destDir);
+    // Create temp extraction directory
+    mkdirp.sync(tempExtractDir);
 
-    extractArchive(tempPath, destDir, (extractErr) => {
-      // Clean up temp file
-      if (fs.existsSync(tempPath)) {
-        try {
-          fs.unlinkSync(tempPath);
-        } catch (_e) {
-          // ignore
-        }
+    extractArchive(tempArchive, tempExtractDir, (extractErr) => {
+      // Clean up temp archive
+      removeIfExistsSync(tempArchive);
+
+      if (extractErr) {
+        rmdirSyncRecursive(tempExtractDir);
+        callback(extractErr);
+        return;
       }
 
-      if (extractErr) return callback(extractErr);
+      // Ensure parent directory exists
+      mkdirp.sync(outDir);
 
-      callback(null, 'downloaded');
+      // Remove existing destDir if present (for upgrade case)
+      rmdirSyncRecursive(destDir);
+
+      // Atomic rename from temp to final location
+      atomicRename(tempExtractDir, destDir, (renameErr) => {
+        if (renameErr) {
+          rmdirSyncRecursive(tempExtractDir);
+          callback(renameErr);
+          return;
+        }
+        callback(null, 'downloaded');
+      });
     });
   });
 }
@@ -253,16 +353,29 @@ function main(): void {
   const { platform } = process;
   const archs = getArchitectures();
 
+  // Check if already installed with matching version
+  if (fs.existsSync(versionFile)) {
+    try {
+      const installedVersion = fs.readFileSync(versionFile, 'utf8');
+      if (installedVersion === BINARIES_VERSION) {
+        console.log(`postinstall: Binaries already installed (v${BINARIES_VERSION})`);
+        exit(0);
+        return;
+      }
+      console.log(`postinstall: Upgrading binaries from v${installedVersion} to v${BINARIES_VERSION}`);
+    } catch (_e) {
+      // version file unreadable, continue with download
+    }
+  }
+
   console.log(`postinstall: Installing thread-sleep-compat binaries for ${platform} (${archs.join(', ')})`);
 
-  const outDir = path.join(root, 'out');
-
-  // Create output directory
-  mkdirp.sync(outDir);
+  // Create output directory in user's home
+  mkdirp.sync(binDir);
 
   const downloads = getDownloadList();
 
-  downloadAll(downloads, outDir, 0, [], (_err, results) => {
+  downloadAll(downloads, binDir, 0, [], (_err, results) => {
     let succeeded = 0;
     let failed = 0;
     let existed = 0;
@@ -293,6 +406,15 @@ function main(): void {
       console.log('');
       console.log(`postinstall: No binaries available for ${platform}`);
       console.log('thread-sleep-compat will work on Node >= 0.12 but not on older versions.');
+    }
+
+    // Write version file after successful installation
+    if (succeeded > 0 || existed > 0) {
+      try {
+        fs.writeFileSync(versionFile, BINARIES_VERSION, 'utf8');
+      } catch (_e) {
+        // ignore version file write errors
+      }
     }
 
     exit(0);

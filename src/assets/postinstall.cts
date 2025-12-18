@@ -28,11 +28,11 @@ const ABI_VERSIONS = ['v1', 'v11'];
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
 
 function homedir(): string {
-  return typeof os.homedir === 'function' ? os.homedir() : process.env.HOME || process.env.USERPROFILE || '/tmp';
+  return typeof os.homedir === 'function' ? os.homedir() : require('homedir-polyfill')();
 }
 
 function tmpdir(): string {
-  return typeof os.tmpdir === 'function' ? os.tmpdir() : process.env.TMPDIR || process.env.TMP || process.env.TEMP || '/tmp';
+  return typeof os.tmpdir === 'function' ? os.tmpdir() : require('os-shim').tmpdir();
 }
 
 // Storage path in user's home directory

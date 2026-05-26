@@ -40,9 +40,9 @@ function findBuilds() {
   return builds;
 }
 
-function buildOutput(build, callback) {
+function buildOutput(build: { abi: string; version: string; arch: string }, callback: (err?: Error | null, result?: string) => void) {
   const filename = binaryFilename(build.version, {
-    arch: build.arch,
+    arch: build.arch as NodeJS.Architecture,
   });
   const src = path.join(root, 'prebuilds', ''.concat(filename.replace(pkg.name, ''.concat(pkg.name, '-v').concat(pkg.version)), '.tar.gz'));
   const dest = path.join(root, 'out', filename);
@@ -81,15 +81,15 @@ function buildOutput(build, callback) {
   });
 }
 
-function buildBinaries(callback) {
+function buildBinaries(callback: (err?: Error | null, results?: string[]) => void) {
   const builds = findBuilds();
-  const outputs = [];
+  const outputs: string[] = [];
   const queue = new Queue(1);
   builds.forEach((build) => {
     queue.defer((cb) => {
-      buildOutput(build, (err, output) => {
+      buildOutput(build, (err: Error | null | undefined, output: string | undefined) => {
         if (err) return cb(err);
-        outputs.push(output);
+        if (output) outputs.push(output);
         cb();
       });
     });
@@ -99,11 +99,11 @@ function buildBinaries(callback) {
   });
 }
 
-buildBinaries((err, built) => {
+buildBinaries((err: Error | null | undefined, built: string[] | undefined) => {
   if (err) {
     console.log(err);
-    process.exit(1);
+    return process.exit(1);
   }
-  console.log(['Built:'].concat(built).join('\n  '));
+  console.log(['Built:'].concat(built ?? []).join('\n  '));
   process.exit(0);
 });

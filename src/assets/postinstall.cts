@@ -25,7 +25,7 @@ const BINARIES_VERSION = pkg.binaryVersion;
 // Note: ABI 14 (Node 0.11.x) skipped - unstable dev branch, not widely used
 const ABI_VERSIONS = ['v1', 'v11'];
 
-const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE ?? '');
 
 function homedir(): string {
   return typeof os.homedir === 'function' ? os.homedir() : require('homedir-polyfill')();
@@ -131,7 +131,7 @@ function copyDirSync(src: string, dest: string): void {
  * Works for both files and directories
  */
 function atomicRename(src: string, dest: string, callback: Callback): void {
-  fs.rename(src, dest, (err) => {
+  fs.rename(src, dest, (err: NodeJS.ErrnoException | null) => {
     if (!err) {
       callback(null);
       return;
@@ -163,7 +163,7 @@ function atomicRename(src: string, dest: string, callback: Callback): void {
 function downloadWithCurl(downloadUrl: string, destPath: string, callback: Callback) {
   const curl = spawn('curl', ['-L', '-f', '-s', '--connect-timeout', '30', '--max-time', '120', '-o', destPath, downloadUrl]);
 
-  curl.on('close', (code) => {
+  curl.on('close', (code: number | null) => {
     if (code !== 0) {
       // curl exit codes: 22 = HTTP error (4xx/5xx), 28 = timeout, 56 = receive error (often 404 with -f)
       if (code === 22 || code === 56) {
@@ -178,7 +178,7 @@ function downloadWithCurl(downloadUrl: string, destPath: string, callback: Callb
     callback(null);
   });
 
-  curl.on('error', (err) => {
+  curl.on('error', (err: Error) => {
     callback(err);
   });
 }
@@ -190,7 +190,7 @@ function downloadWithPowerShell(downloadUrl: string, destPath: string, callback:
   const psCommand = `Invoke-WebRequest -Uri "${downloadUrl}" -OutFile "${destPath}" -UseBasicParsing`;
   const ps = spawn('powershell', ['-NoProfile', '-Command', psCommand]);
 
-  ps.on('close', (code) => {
+  ps.on('close', (code: number | null) => {
     if (code !== 0) {
       callback(new Error(`PowerShell download failed with exit code ${code}`));
       return;
@@ -198,7 +198,7 @@ function downloadWithPowerShell(downloadUrl: string, destPath: string, callback:
     callback(null);
   });
 
-  ps.on('error', (err) => {
+  ps.on('error', (err: Error) => {
     callback(err);
   });
 }
@@ -227,14 +227,14 @@ function downloadFile(downloadUrl: string, destPath: string, callback: Callback)
  */
 function extractArchive(archivePath: string, destDir: string, callback: Callback) {
   const tar = spawn('tar', ['-xzf', archivePath, '-C', destDir]);
-  tar.on('close', (code) => {
+  tar.on('close', (code: number | null) => {
     if (code !== 0) {
       callback(new Error(`tar failed with exit code ${code}`));
       return;
     }
     callback(null);
   });
-  tar.on('error', (err) => {
+  tar.on('error', (err: Error) => {
     callback(err);
   });
 }

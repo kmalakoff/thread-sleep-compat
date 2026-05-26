@@ -7,7 +7,7 @@ const _require = typeof require === 'undefined' ? Module.createRequire(import.me
 const major = +process.versions.node.split('.')[0];
 const minor = +process.versions.node.split('.')[1];
 
-let threadSleep: ThreadSleepFunction = null;
+let threadSleep: ThreadSleepFunction = null as unknown as ThreadSleepFunction;
 
 if (major === 0 && minor < 12) {
   try {

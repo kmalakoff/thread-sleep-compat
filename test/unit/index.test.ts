@@ -34,7 +34,7 @@ describe('thread-sleep-compat', () => {
       assert(ex instanceof RangeError);
     }
 
-    function abs(value) {
+    function abs(value: number) {
       return value < 0 ? value * -1 : value;
     }
     const start = Date.now();

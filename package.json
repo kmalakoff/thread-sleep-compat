@@ -49,10 +49,10 @@
   "devDependencies": {
     "@types/mocha": "*",
     "@types/node": "*",
-    "cmake-js": "^7.4.0",
+    "cmake-js": "^8.0.0",
     "cross-spawn-cb": "^3.0.0",
     "fast-extract": "^1.0.1",
-    "nan": "2.24.0",
+    "nan": "2.27.0",
     "node-version-use": "*",
     "prebuild": "^13.0.1",
     "queue-cb": "^1.0.0",

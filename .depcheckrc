@@ -1,1 +1,1 @@
-ignores: ["node-version-use", "ts-dev-stack", "thread-sleep-compat", "cmake-js", "nan", "prebuild", "thread-sleep"]
+ignores: ["thread-sleep-compat", "node-version-use", "ts-dev-stack", "cmake-js", "nan", "prebuild", "thread-sleep"]

@@ -2,7 +2,6 @@ import assert from 'assert';
 import { spawn } from 'child_process';
 import fs from 'fs';
 import Module from 'module';
-import os from 'os';
 import path from 'path';
 import url from 'url';
 
@@ -13,10 +12,6 @@ const root = path.join(__dirname, '..', '..');
 const postinstallScript = path.join(root, 'assets', 'postinstall.cjs');
 const pkg = _require(path.join(root, 'package.json'));
 const BINARIES_VERSION = pkg.binaryVersion;
-
-function tmpdir(): string {
-  return typeof os.tmpdir === 'function' ? os.tmpdir() : require('os-shim').tmpdir();
-}
 
 /**
  * Run postinstall script with STC_HOME set to a temp directory
@@ -75,7 +70,7 @@ describe('postinstall', function () {
 
   beforeEach(() => {
     // Create unique temp directory for each test
-    tempDir = path.join(tmpdir(), `stc-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    tempDir = path.join(root, '.tmp', `stc-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     fs.mkdirSync(tempDir, { recursive: true });
   });
 

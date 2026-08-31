@@ -52,7 +52,7 @@
     "cmake-js": "^8.0.0",
     "cross-spawn-cb": "^3.0.0",
     "fast-extract": "^1.0.1",
-    "nan": "2.27.0",
+    "nan": "2.28.0",
     "node-version-use": "*",
     "prebuild": "^13.0.1",
     "queue-cb": "^1.0.0",
@@ -61,6 +61,13 @@
   },
   "engines": {
     "node": ">=0.8"
+  },
+  "allowScripts": {
+    "es5-ext": true,
+    "node-filename-to-dist-paths": true,
+    "node-semvers": true,
+    "node-version-use": true,
+    "thread-sleep-compat": true
   },
   "binaryVersion": "1.0.0"
 }

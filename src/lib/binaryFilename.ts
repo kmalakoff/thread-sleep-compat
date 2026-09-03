@@ -1,18 +1,21 @@
 import path from 'path';
 
-import type { Options } from '../types.ts';
+export interface Options {
+  platform?: NodeJS.Platform;
+  arch?: NodeJS.Architecture;
+}
 
 const root = path.join(__dirname, '..', '..', '..');
 const pkg = require(path.join(root, 'package.json'));
 
-// Get ABI for old Node versions (< 0.12)
-// ABI 1: Node 0.8.x and earlier
-// ABI 11: Node 0.10.x
+// ABI 1: Node 0.8.x and earlier; ABI 11: Node 0.10.x
+// Node 0.11.x is ABI 14, an unstable dev branch that is not built
 function getAbiForOldNode(version: string): string {
   const parts = version.split('.');
   const minor = parseInt(parts[1], 10);
   if (minor < 10) return '1';
-  return '11';
+  if (minor === 10) return '11';
+  throw new Error(`no ABI built for node ${version}`);
 }
 
 export default function binaryFilename(version: string, options: Options = {}) {

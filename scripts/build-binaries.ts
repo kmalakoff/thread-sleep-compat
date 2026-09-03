@@ -1,5 +1,4 @@
 import spawn from 'cross-spawn-cb';
-import extract from 'fast-extract';
 import fs from 'fs';
 import path from 'path';
 import Queue from 'queue-cb';
@@ -9,7 +8,6 @@ import binaryFilename from '../dist/cjs/lib/binaryFilename.js';
 
 const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
-const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 
 interface Build {
   abi: string;
@@ -48,32 +46,22 @@ function findBuilds() {
 }
 
 function buildOutput(build: Build, callback: (err?: Error | null, result?: string) => void) {
-  const filename = build.filename;
-  const src = path.join(root, 'prebuilds', ''.concat(filename.replace(pkg.name, ''.concat(pkg.name, '-v').concat(pkg.version)), '.tar.gz'));
-  const dest = path.join(root, 'assets', 'thread-sleep', 'bin', filename);
+  const out = path.join(root, '.tmp', 'build', build.filename);
+  const built = path.join(out, 'Release', 'thread_sleep.node');
+  const dest = path.join(root, 'assets', 'thread-sleep', 'bin', build.filename);
+  const cmakeJs = path.join(root, 'node_modules', '.bin', 'cmake-js');
   const queue = new Queue(1);
   queue.defer((callback) => {
-    fs.stat(src, (err) => {
-      if (!err) return callback(); // exists
-      const prebuild = path.join(root, 'node_modules', '.bin', 'prebuild');
-      spawn(
-        prebuild,
-        ['--backend', 'cmake-js', '-t', build.version, '-a', build.arch],
-        {
-          stdio: 'inherit',
-        },
-        callback
-      );
+    spawn(cmakeJs, ['compile', '--runtime', 'node', '--runtime-version', build.version, '--arch', build.arch, '--out', out], { stdio: 'inherit' }, callback);
+  });
+  queue.defer((callback) => {
+    fs.stat(built, (err) => {
+      err ? callback(new Error('cmake-js produced no addon at '.concat(path.relative(root, built)))) : callback();
     });
   });
   queue.defer((callback) => {
-    fs.stat(src, (err) => {
-      if (err) return callback(new Error('prebuild produced no archive at '.concat(path.relative(root, src))));
-      // strip build/Release/ so the committed layout is one directory per binary
-      extract(src, dest, { strip: 2, force: true }, (err) => {
-        callback(err);
-        return;
-      });
+    fs.mkdir(dest, { recursive: true }, (err) => {
+      err ? callback(err) : fs.copyFile(built, path.join(dest, 'thread_sleep.node'), callback);
     });
   });
   queue.await((err) => {

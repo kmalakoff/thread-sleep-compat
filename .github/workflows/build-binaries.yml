@@ -1,0 +1,46 @@
+name: Build Binaries
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          # macOS
+          - os: macos-14
+            platform: darwin
+          # Linux - use older runner
+          - os: ubuntu-22.04
+            platform: linux
+          # Windows
+          - os: windows-2022
+            platform: win32
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build TypeScript
+        run: npm run build
+
+      - name: Build binaries for platform
+        run: npm run build:binaries
+
+      # Download these and commit them: the binaries ship in the package
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries-${{ matrix.platform }}
+          path: assets/thread-sleep/bin/
+          if-no-files-found: error

@@ -45,7 +45,7 @@
     "@types/node": "*",
     "cmake-js": "^8.0.0",
     "cross-spawn-cb": "^3.0.0",
-    "nan": "2.28.0",
+    "nan": "2.29.0",
     "node-version-use": "*",
     "queue-cb": "^1.0.0",
     "ts-dev-stack": "*",
